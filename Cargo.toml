@@ -5,6 +5,8 @@ authors = ["auseckas <andrew@threatx.io>"]
 description = "TShell, a command tree framework with autocompletion and contextual help"
 readme = "README.md"
 keywords = ["tshell"]
+documentation = "https://github.com/auseckas/tshell"
+repository = "https://github.com/auseckas/tshell"
 license = "MIT"
 
 [dependencies]
