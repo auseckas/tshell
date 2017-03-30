@@ -2,7 +2,7 @@
 name = "tshell"
 version = "0.1.0"
 authors = ["auseckas <andrew@threatx.io>"]
-description = "TShell, a command tree framework with autocompletion and cotnextual help"
+description = "TShell, a command tree framework with autocompletion and contextual help"
 readme = "README.md"
 keywords = ["tshell"]
 license = "MIT"
@@ -10,4 +10,5 @@ license = "MIT"
 [dependencies]
 env_logger = "^0.3"
 log = "^0.3"
-rustyline = { git="https://github.com/kkawakam/rustyline" }
+#rustyline = { git="https://github.com/kkawakam/rustyline" }
+rustyline = "^1.0.0"

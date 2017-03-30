@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::env;
 use std::fmt::Debug;
-use rustyline::{Config, CompletionType, Editor};
+use rustyline::Editor;
 use rustyline::error::ReadlineError;
 use completion::TxCompleter;
 use std::sync::{Arc, Mutex};
@@ -353,13 +353,13 @@ impl <T>CommandTree<T>
 
     pub fn run(&mut self)  {
         println!("Welcome to {} v{}", self.name, self.version);
-        let config = Config::builder()
-            .history_ignore_space(true)
-            .completion_type(CompletionType::List)
-            .build();
+        // let config = Config::builder()
+        //     .history_ignore_space(true)
+        //     .completion_type(CompletionType::List)
+        //     .build();
 
         let c = TxCompleter::new(&self, None);
-        let mut rl: Editor<TxCompleter<T>> = Editor::with_config(config);
+        let mut rl: Editor<TxCompleter<T>> = Editor::new().history_ignore_space(true);
         rl.set_completer(Some(c));
 
         let home_dir = env::home_dir()
@@ -389,7 +389,7 @@ impl <T>CommandTree<T>
             };
 
             if !line.starts_with("profile") || line.contains("login") {
-                rl.add_history_entry(line.to_owned());
+                rl.add_history_entry(line.as_str());
             }
 
             if line.contains('>') {
