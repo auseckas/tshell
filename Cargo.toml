@@ -1,6 +1,6 @@
 [package]
 name = "tshell"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["auseckas <andrew@threatx.io>"]
 description = "TShell, a command tree framework with autocompletion and contextual help"
 readme = "README.md"
