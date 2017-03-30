@@ -17,7 +17,7 @@ fn world(args: HashMap<String, &str>, o_context: &mut Option<Context>, history: 
     Ok(None)
 }
 
-fn darnkess(args: HashMap<String, &str>, o_context: &mut Option<Context>, history: &HashMap<String, String>) -> CommandResult<Option<String>> {
+fn darkness(args: HashMap<String, &str>, o_context: &mut Option<Context>, history: &HashMap<String, String>) -> CommandResult<Option<String>> {
     if let Some(friend) = args.get("friend") {
         println!("Darkness, friend = {}", friend);
     }
@@ -58,7 +58,7 @@ fn main() {
                     shell_command_node!{
                         cmd: darkness,
                         txt_help: "Darkness",
-                        callback: darnkess,
+                        callback: darkness,
                         args: [friend => true]
                     }
                 ]
@@ -77,7 +77,7 @@ fn main() {
                     shell_command_node!{
                         cmd: darkness,
                         txt_help: "Darkness",
-                        callback: darnkess,
+                        callback: darkness,
                         args: [friend => true]
                     }
                 ]
