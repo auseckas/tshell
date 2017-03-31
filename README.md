@@ -48,7 +48,7 @@ fn main() {
                     shell_command_node!{
                         cmd: darkness,
                         txt_help: "Darkness",
-                        callback: dannkess,
+                        callback: darkness,
                         args: [friend => true]
                     }
                 ]
