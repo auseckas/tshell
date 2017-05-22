@@ -64,7 +64,7 @@ to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-tshell = "0.1.0"
+tshell = "^0.1"
 ```
 
 ## Features
