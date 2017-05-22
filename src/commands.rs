@@ -11,6 +11,7 @@ pub type CallBack<T> = Fn(HashMap<String, &str>, &mut Option<T>, &HashMap<String
 
 pub struct Node<T> {
     pub cmd: String,
+    hidden: bool,
     help: String,
     args: Option<Vec<(String, bool)>>,
     sub_nodes: Option<Vec<Node<T>>>,
@@ -18,9 +19,20 @@ pub struct Node<T> {
 }
 
 impl <T>Node<T> {
-    pub fn new(cmd: &str, help: &str, callback: Option<Box<CallBack<T>>>) -> Node<T> {
+    pub fn new(cmd: &str,  conditional: Option<&str>, help: &str, callback: Option<Box<CallBack<T>>>) -> Node<T> {
+
+        let hidden = if let Some(c) = conditional {
+            match env::var(&c){
+                Ok(_) => false,
+                Err(_) => true
+            }
+        } else {
+            false
+        };
+
         Node {
             cmd: cmd.to_owned(),
+            hidden: hidden,
             help: help.to_owned(),
             args: None,
             sub_nodes: None,
@@ -55,7 +67,7 @@ impl <T>Node<T> {
         }
         if let Some(ref nodes) = self.sub_nodes {
             for node in nodes.iter() {
-                if node.cmd == cmd {
+                if node.cmd == cmd && !node.hidden{
                     return Some(node)
                 }
             }
@@ -78,7 +90,7 @@ impl <T>Node<T> {
                     return Some(nodes.iter().map(|n| n.cmd.as_str()).collect());
                 }
                 for node in nodes {
-                    if node.cmd.starts_with(levels[idx]) {
+                    if node.cmd.starts_with(levels[idx]) && !node.hidden {
                         results.push(&node.cmd);
                     }
                 }
@@ -109,6 +121,9 @@ impl <T>Node<T> {
     }
 
     pub fn print_help(&self, level: u8) {
+        if self.hidden {
+            return;
+        }
         if level > 0 {
             for _ in 0..level {
                 print!("  ");
@@ -161,7 +176,7 @@ macro_rules! shell_command_node {
         cmd: $name:ident,
         txt_help: $help:expr
     ) => {
-        $crate::commands::Node::new(stringify!($name), $help, None);
+        $crate::commands::Node::new(stringify!($name), None, $help, None);
     };
     (
         cmd: $name:ident,
@@ -169,7 +184,7 @@ macro_rules! shell_command_node {
         nodes: [ $( $node:expr ),* ]
     ) => {
         {
-            let mut this_node = $crate::commands::Node::new(stringify!($name), $help, None);
+            let mut this_node = $crate::commands::Node::new(stringify!($name), None, $help, None);
             $(
                 this_node.add_node($node);
             )*
@@ -182,9 +197,23 @@ macro_rules! shell_command_node {
         args: [ $( $arg:ident => $required:expr ),* ]
     ) => {
         {
-            let mut this_node = $crate::commands::Node::new(stringify!($name), $help, None);
+            let mut this_node = $crate::commands::Node::new(stringify!($name), None, $help, None);
             $(
                 this_node.add_arg(stringify!($arg), $required);
+            )*
+            this_node
+        }
+    };
+    (
+        cmd: $name:ident,
+        conditional: $cond:expr,
+        txt_help: $help:expr,
+        nodes: [ $( $node:expr ),* ]
+    ) => {
+        {
+            let mut this_node = $crate::commands::Node::new(stringify!($name), Some($cond), $help, None);
+            $(
+                this_node.add_node($node);
             )*
             this_node
         }
@@ -197,7 +226,7 @@ macro_rules! shell_command_node {
         nodes: [ $( $node:expr ),* ]
     ) => {
         {
-            let mut this_node = $crate::commands::Node::new(stringify!($name), $help, Some(Box::new($callback)));
+            let mut this_node = $crate::commands::Node::new(stringify!($name), None, $help, Some(Box::new($callback)));
             $(
                 this_node.add_node($node);
             )*
@@ -212,7 +241,7 @@ macro_rules! shell_command_node {
         txt_help: $help:expr,
         callback: $callback:expr
     ) => {
-        $crate::commands::Node::new(stringify!($name), $help, Some(Box::new($callback)));
+        $crate::commands::Node::new(stringify!($name), None, $help, Some(Box::new($callback)));
     };
     (
         cmd: $name:ident,
@@ -221,7 +250,7 @@ macro_rules! shell_command_node {
         nodes: [ $( $node:expr ),* ]
     ) => {
         {
-            let mut this_node = $crate::commands::Node::new(stringify!($name), $help, Some(Box::new($callback)));
+            let mut this_node = $crate::commands::Node::new(stringify!($name), None, $help, Some(Box::new($callback)));
             $(
                 this_node.add_node($node);
             )*
@@ -235,7 +264,7 @@ macro_rules! shell_command_node {
         args: [ $( $arg:ident => $required:expr ),* ]
     ) => {
         {
-            let mut this_node = $crate::commands::Node::new(stringify!($name), $help, Some(Box::new($callback)));
+            let mut this_node = $crate::commands::Node::new(stringify!($name), None, $help, Some(Box::new($callback)));
             $(
                 this_node.add_arg(stringify!($arg), $required);
             )*
@@ -250,7 +279,7 @@ macro_rules! shell_command_node {
         nodes: [ $( $node:expr ),* ]
     ) => {
         {
-            let mut this_node = $crate::commands::Node::new(stringify!($name), $help, Some(Box::new($callback)));
+            let mut this_node = $crate::commands::Node::new(stringify!($name), None, $help, Some(Box::new($callback)));
             $(
                 this_node.add_node($node);
             )*
@@ -621,7 +650,7 @@ macro_rules! shell_command_tree {
         [ $( $node:expr ),* ]
     ) => {
         {
-            let mut root_node = $crate::commands::Node::new(stringify!($name), $help, None);
+            let mut root_node = $crate::commands::Node::new(stringify!($name), None, $help, None);
             $(
                 root_node.add_node($node);
             )*
