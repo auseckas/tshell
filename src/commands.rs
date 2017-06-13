@@ -435,7 +435,22 @@ impl <T>CommandTree<T>
                 }
                 history.insert("tx_output_file".to_owned(), output.to_owned());
             }
+            else if line.contains('|') {
+                let v_line: Vec<String> = line.split('|').map(|e| e.to_owned()).collect();
+                if v_line.len() != 2 {
+                    println!("Wrong cmd format in line: {}", line);
+                    continue;
+                }
+                line = v_line[0].trim().to_owned();
+                let output = v_line[1].trim();
+                if output.contains(char::is_whitespace)  {
+                    println!("Wrong cmd format in output: {}", output);
+                    continue;
+                }
+                history.insert("tx_modifier".to_owned(), output.to_owned());
+            }
             else {
+                history.remove("tx_modifier");
                 history.remove("tx_output_file");
             }
 

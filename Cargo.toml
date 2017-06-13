@@ -1,7 +1,7 @@
 [package]
 name = "tshell"
-version = "0.1.2"
-authors = ["auseckas <andrew@threatx.io>"]
+version = "0.1.3"
+authors = ["auseckas <andrew@threatx.io>", "Stu Small <stuart.small@threat-x.com>"]
 description = "TShell, a command tree framework with autocompletion and contextual help"
 readme = "README.md"
 keywords = ["tshell"]
