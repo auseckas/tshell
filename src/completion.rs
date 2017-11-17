@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use rustyline::line_buffer::LineBuffer;
 use rustyline::completion::Completer;
 use rustyline::Result;
 use super::CommandTree;
@@ -33,12 +34,26 @@ impl <'a, T>Completer for TxCompleter<'a, T>
             })
             .unwrap_or(Vec::new());
 
-        let insert_pos = match line.rfind(char::is_whitespace) {
-            Some(val) => val + 1,
-            None => 0
-        };
+        Ok((pos, suggestions))
+    }
 
-        Ok((insert_pos, suggestions))
+    fn update(&self, line_buffer: &mut LineBuffer, _start: usize, elected: &str) {
+        let line = line_buffer.as_str().to_owned();
+
+        let words: Vec<&str> = line.split(char::is_whitespace).collect();
+
+        if let Some(last_word) = words.last() {
+            if elected.starts_with(last_word) {
+                let insert_pos = match line.rfind(char::is_whitespace) {
+                    Some(val) => val + 1,
+                    None => 0
+                };
+                debug!("Insert pos: {}, buf len: {}", insert_pos, line_buffer.len());
+                let end = line_buffer.pos();
+                line_buffer.replace(insert_pos, end, elected);
+            }
+        }
+        line_buffer.move_end();
     }
 
 }

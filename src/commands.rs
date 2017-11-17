@@ -61,7 +61,7 @@ impl <T>Node<T> {
 
     pub fn find(&self, cmd: &str) -> Option<&Node<T>> {
         debug!("Find: {}", cmd);
-        if cmd == "?" {
+        if cmd == "?" || cmd == "" {
             self.print_help(1);
             return None;
         }
@@ -553,6 +553,14 @@ impl <T>CommandTree<T>
                                         None
                                     }
                                 }).collect();
+                                let optional: Vec<&str> = args.iter().filter_map(|a| {
+                                    if !a.1 {
+                                        Some(a.0.as_str())
+                                    }
+                                    else {
+                                        None
+                                    }
+                                }).collect();
                                 for (x, arg) in required.iter().enumerate() {
                                     if let Some(val) = levels.get(i + 1) {
                                         if *val == "?" {
@@ -569,12 +577,35 @@ impl <T>CommandTree<T>
                                     }
                                     i += 1;
                                 }
+                                debug!("Levels: {:?}", levels);
+                                let start = i + 1;
+                                for level in &levels[start..] {
+                                    if level.contains('=') {
+                                        let cmd_val: Vec<&str> = level.splitn(2, '=').collect();
+                                        if !cmd_val.len() == 2 {
+                                            continue;
+                                        }
+                                        for arg in optional.iter() {
+                                            if arg == &cmd_val[0] {
+                                                my_args.insert((*arg).to_owned(), cmd_val[1]);
+                                                i += 1;
+                                            }
+                                        }
+                                    }
+                                }
+
                                 if error {
                                     break;
                                 }
                             }
 
                             debug!("Current: {:?}, args: {:?}, levels[i]: {:?}", current_node.cmd, my_args, levels.get(i + 1));
+                            if let Some(level) = levels.get(i + 1) {
+                                if !level.is_empty() {
+                                    i += 1;
+                                    continue;
+                                }
+                            }
                             let mut context = match self.context.lock() {
                                 Ok(val) => val,
                                 Err(e) => {
@@ -629,7 +660,8 @@ impl <T>CommandTree<T>
                     },
                     None => {
                         if !levels[i].starts_with("?") {
-                            println!("Error: command not found");
+                            println!("Error: command '{}' not found", levels[i]);
+                            error = true;
                         }
                         break;
                     }
