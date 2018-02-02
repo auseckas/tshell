@@ -621,6 +621,9 @@ impl <T>CommandTree<T>
                                             if let Some(&(context, _)) = my_context.last() {
                                                 rl.set_completer(Some(TxCompleter::new(&self, Some(context))));
                                             }
+                                            else {
+                                                rl.set_completer(Some(TxCompleter::new(&self, None)));
+                                            }
                                         }
                                         else {
                                             rl.set_completer(Some(TxCompleter::new(&self, None)));
